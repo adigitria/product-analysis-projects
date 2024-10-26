@@ -21,7 +21,7 @@ Demand for **gaming laptops** could be higher, but users struggle to find them a
 
 ## SQL
 
-```jsx
+```sql
 
             WITH
 
@@ -65,7 +65,7 @@ Demand for **gaming laptops** could be higher, but users struggle to find them a
             /* задайте условие для JOIN здесь */
 ```
 
-```jsx
+```sql
             WITH
 
             -- Сформируем профиль пользователя
@@ -92,7 +92,7 @@ Demand for **gaming laptops** could be higher, but users struggle to find them a
             HAVING COUNT(DISTINCT test_group) > 1
 ```
 
-```jsx
+```sql
 
             WITH
 

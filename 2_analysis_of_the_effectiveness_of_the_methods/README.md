@@ -26,7 +26,7 @@ To analyze the payback of new product users within the first seven days of their
 
 ## SQL
 
-```jsx
+```sql
 WITH first_values as (
 
     -- Начальные параметры пользователей

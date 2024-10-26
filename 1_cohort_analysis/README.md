@@ -28,7 +28,7 @@
 
 ## SQL
 
-```jsx
+```sql
 WITH first_values as (
 
     -- Начальные параметры пользователей
