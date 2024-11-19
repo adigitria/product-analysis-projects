@@ -1,47 +1,31 @@
 # 1. Cohort analysis
 
-**QUESTIONS:**
+### Table of Contents
+1. [Questions](#questions)
+2. [SQL LTV Analysis Pipeline](#sql-ltv-analysis-pipeline)
+   1. [User First Values](#user-first-values)
+   2. [New Users](#new-users)
+   3. [CAC Calculation](#cac-calculation)
+   4. [User Profiles](#user-profiles)
+   5. [Cohort Creation](#cohort-creation)
+   6. [Orders and Revenue](#orders-and-revenue)
+   7. [Cohort Revenue](#cohort-revenue)
+   8. [Final LTV Calculation](#final-ltv-calculation)
+   9. [Final version](#final-version)
+3. [DashBoard](#dashboard)
 
-**How has the product's DAU level changed over the observation period? Were there any trends, outliers, or anomalies?**
+## Questions
 
-- Analyzing daily active users (DAU) trends over time, identifying any seasonal patterns, spikes, or unusual drops.
-
-**How is the new audience distributed across acquisition sources? Can we identify leading and lagging sources?**
-
-- Evaluating the share of new users from each acquisition channel and determining the most and least effective sources.
-
-**Are there differences in conversion rates to purchases among users from different acquisition sources?**
-
-- Comparing the purchase conversion rates across acquisition channels to see which source brings the most engaged buyers.
-
-**What share of active users does each acquisition source contribute? Does this align with the distribution of new users from the second chart?**
-
-- Assessing the retention and engagement levels of users from different sources and checking whether new user trends translate into long-term activity.
-
-**Are there differences in the time spent watching content among users from different acquisition sources?**
-
-- Analyzing watch time variations by acquisition channel to understand engagement patterns.
-
-**Which movies are in the top 3 by number of views? Which movies are in the top 3 by rating?**
-
-- Identifying the most-watched films and the highest-rated ones, highlighting potential differences in popularity versus perceived quality.
-
-## SQL
+| Question                                                                                      | Focus                                                                 |
+|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| How has DAU changed over time? Any trends or anomalies?                                       | DAU trends, seasonality, spikes, or drops                            |
+| How is the new audience distributed across sources?                                           | Share of new users by acquisition channel                            |
+| Are there differences in purchase conversion rates by source?                                | Conversion comparison by acquisition source                          |
+| What share of active users does each source contribute? Does it align with new user trends?  | Retention and engagement by source vs. initial user distribution     |
+| Are there differences in watch time by source?                                                | Watch time variation across channels                                 |
+| Top 3 movies by views and rating?                                                             | Most-watched vs. highest-rated movies                                |
 
 ## SQL LTV Analysis Pipeline
-
-### Table of Contents
-1. [User First Values](#user-first-values)
-2. [New Users](#new-users)
-3. [CAC Calculation](#cac-calculation)
-4. [User Profiles](#user-profiles)
-5. [Cohort Creation](#cohort-creation)
-6. [Orders and Revenue](#orders-and-revenue)
-7. [Cohort Revenue](#cohort-revenue)
-8. [Final LTV Calculation](#final-ltv-calculation)
-9. [Final version](#final-version)
-
----
 
 ### User First Values
 Get the initial attributes of users: city, device, age, source, etc.
