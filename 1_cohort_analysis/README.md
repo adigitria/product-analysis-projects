@@ -12,7 +12,7 @@
    7. [Cohort Revenue](#cohort-revenue)
    8. [Final LTV Calculation](#final-ltv-calculation)
    9. [Final version](#final-version)
-3. [DashBoard](#dashboard)
+3. [Dashboard](#dashboard)
 
 ## Questions
 
@@ -355,6 +355,8 @@ GROUP BY first_date,
        source
 ```
 
-## DashBoard
+## Dashboard
 
 [https://public.tableau.com/app/profile/svetlana.bogomaz/viz/FirstDashboard_17200388087300/Dashboard1?publish=yes](https://public.tableau.com/app/profile/svetlana.bogomaz/viz/FirstDashboard_17200388087300/Dashboard1?publish=yes)
+
+![Dashboard 1.png](Dashboard%201.png)
