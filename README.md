@@ -4,12 +4,12 @@ This repository contains a set of projects focused on data analytics and busines
 
 ## Projects Overview
 
-| Project                                              | Description                                                                                                                                                         | Link                                      |
-|------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
-| **1. Cohort Analysis**                               | Cohort-based LTV analysis with SQL pipeline and Tableau dashboard. Includes CAC, retention, and LTV per acquisition source.                                         | [README](./1_cohort_analysis/README.md)   |
-| **2. Promotion Effectiveness – "All.of.Cafe"**       | Analyzes the ROI of new user acquisition campaigns across cities, platforms, and age groups. Recommendations on ad targeting and cohort profitability.              | [README](./2_all_of_cafe/README.md)       |
-| **3. Growth Points Analysis**                        | Combines user journey mapping and RFM/ABC-XYZ analysis to optimize conversion funnels and partner network performance.                                              | [README](./3_growth_points/README.md)     |
-| **4. A/B Test – "Everything.Equipment" Marketplace** | Evaluation of A/B test for gaming laptops category split. Measures conversion rate and AOV changes. Includes statistical test results and business recommendations. | [README](./4_ab_test_equipment/README.md) |
+| Project                                              | Description                                                                                                                                                         | Link                                                                 |
+|------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| **1. Cohort Analysis**                               | Cohort-based LTV analysis with SQL pipeline and Tableau dashboard. Includes CAC, retention, and LTV per acquisition source.                                         | [README](./1_cohort_analysis/README.md)                              |
+| **2. Promotion Effectiveness – "All.of.Cafe"**       | Analyzes the ROI of new user acquisition campaigns across cities, platforms, and age groups. Recommendations on ad targeting and cohort profitability.              | [README](./2_analysis_of_the_effectiveness_of_the_methods/README.md) |
+| **3. Growth Points Analysis**                        | Combines user journey mapping and RFM/ABC-XYZ analysis to optimize conversion funnels and partner network performance.                                              | [README](./3_analysis_of_growth_points/README.md)                    |
+| **4. A/B Test – "Everything.Equipment" Marketplace** | Evaluation of A/B test for gaming laptops category split. Measures conversion rate and AOV changes. Includes statistical test results and business recommendations. | [README](./4_a_b_test_of_marketplace_everything_equipment/README.md) |
 
 ## Tools & Skills
 - **SQL**: Complex queries, CTEs, window functions, cohort modeling, segmentation logic.
