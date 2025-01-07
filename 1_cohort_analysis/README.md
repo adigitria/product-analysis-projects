@@ -16,14 +16,14 @@
 
 ## Questions
 
-| Question                                                                                      | Focus                                                                 |
-|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| How has DAU changed over time? Any trends or anomalies?                                       | DAU trends, seasonality, spikes, or drops                            |
-| How is the new audience distributed across sources?                                           | Share of new users by acquisition channel                            |
-| Are there differences in purchase conversion rates by source?                                | Conversion comparison by acquisition source                          |
-| What share of active users does each source contribute? Does it align with new user trends?  | Retention and engagement by source vs. initial user distribution     |
-| Are there differences in watch time by source?                                                | Watch time variation across channels                                 |
-| Top 3 movies by views and rating?                                                             | Most-watched vs. highest-rated movies                                |
+| Question                                                                                    | Focus                                                            |
+|---------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| How has DAU changed over time? Any trends or anomalies?                                     | DAU trends, seasonality, spikes, or drops                        |
+| How is the new audience distributed across sources?                                         | Share of new users by acquisition channel                        |
+| Are there differences in purchase conversion rates by source?                               | Conversion comparison by acquisition source                      |
+| What share of active users does each source contribute? Does it align with new user trends? | Retention and engagement by source vs. initial user distribution |
+| Are there differences in watch time by source?                                              | Watch time variation across channels                             |
+| Top 3 movies by views and rating?                                                           | Most-watched vs. highest-rated movies                            |
 
 ## SQL LTV Analysis Pipeline
 
