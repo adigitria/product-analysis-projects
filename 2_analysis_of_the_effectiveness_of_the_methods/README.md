@@ -200,6 +200,8 @@ GROUP BY first_date, city_name, device, age, source
 
 [View Tableau Dashboard](https://public.tableau.com/app/profile/svetlana.bogomaz/viz/allFromCaffee/Dashboard1?publish=yes)
 
+![Dashboard 1.png](Dashboard%201.png)
+
 ## Conclusions
 
 - Total marketing investments on the seventh day are close to breakeven (ROI = 0.98).
