@@ -1,86 +1,94 @@
-# 3. Analysis of Growth points
+# 3. Analysis of Growth Points
 
-### **User Journey Analysis**
-
-1. **How many sessions do users typically generate?**
-    - Identifying the most common number of sessions per user to understand engagement levels.
-2. **During which session does the first purchase usually occur?**
-    - Analyzing whether the first purchase happens early in the user journey or requires multiple interactions.
-    - Examining differences in the session number of the first purchase across platforms, cities, and acquisition sources.
-3. **What is the most typical user path during the first session?**
-    - Mapping common actions users take in their initial interaction with the product.
-4. **Do typical event sequences vary across platforms, cities, and acquisition sources?**
-    - Checking if different user segments engage with the product in distinct ways.
-5. **What are the key steps in the user journey from first entry to first purchase?**
-    - Outlining the major touchpoints users go through before completing their first transaction.
-6. **What bottlenecks exist in this user journey?**
-    - Identifying drop-off points and friction areas that may cause users to abandon the journey.
-    - Providing recommendations to the product team for optimizing the funnel and improving conversions.
-7. **Do user journeys differ across platforms, cities, and acquisition sources?**
-    - Analyzing variations in user behavior based on segmentation.
-    - Interpreting what these differences indicate about product experience or audience preferences.
+## Table of Contents
+1. [User Journey Analysis](#user-journey-analysis)
+2. [RFM and ABC-XYZ Analysis](#rfm-and-abc-xyz-analysis)
+3. [SQL Pipeline](#sql-pipeline)
+   - [Weekly Revenue by Chain](#weekly-revenue-by-chain)
+   - [Partner Variation Metrics](#partner-variation-metrics)
+   - [ABC-XYZ Grouping](#abc-xyz-grouping)
+4. [Dashboard](#dashboard)
+5. [Conclusions](#conclusions)
+   - [Improving the User Journey](#improving-the-user-journey)
+   - [Customer Loyalty](#customer-loyalty)
+   - [Partner Network Strategy](#partner-network-strategy)
 
 ---
 
-### **RFM Analysis & ABC-XYZ Analysis**
+## User Journey Analysis
 
-1. **What are the three largest RFM segments across different platforms, cities, and acquisition sources?**
-    - Identifying dominant user groups based on **Recency, Frequency, and Monetary Value**.
-2. **Highlight and describe the healthiest and most problematic customer segments.**
-    - Evaluating user retention, purchase frequency, and revenue contribution to pinpoint strong and weak segments.
-3. **Describe the distribution of partner networks across ABC-XYZ segments.**
-    - Classifying partners based on sales volume (**ABC**) and demand variability (**XYZ**).
-    - Making recommendations to the product team on which partners should be prioritized for collaboration.
-4. **Why shouldn't segmentation parameters be applied to ABC-XYZ analysis results?**
-    - Discussing how ABC-XYZ focuses on inventory and demand classification rather than behavioral segmentation.
-    - Explaining the risks of misinterpreting ABC-XYZ results when over-segmenting data.
+| Question                                                          | Purpose                                                      |
+|-------------------------------------------------------------------|--------------------------------------------------------------|
+| How many sessions do users typically generate?                    | Understand typical engagement levels                         |
+| During which session does the first purchase usually occur?       | Analyze purchase timing and differences across user segments |
+| What is the most typical user path during the first session?      | Identify common first-session actions                        |
+| Do event sequences vary across platforms, cities, and sources?    | Segment behavior patterns                                    |
+| What are the key steps from entry to first purchase?              | Map critical touchpoints                                     |
+| What bottlenecks exist in this journey?                           | Detect friction points and recommend UX improvements         |
+| Do user journeys differ by platform, city, or acquisition source? | Understand variations in user experience by segmentation     |
 
-## SQL
+---
+
+## RFM and ABC-XYZ Analysis
+
+| Question                                                                                           | Purpose                                                                                   |
+|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| What are the three largest RFM segments by platform, city, and source?                           | Identify dominant customer clusters                                                      |
+| Which customer segments are healthiest or most problematic?                                      | Assess retention and profitability                                                       |
+| How are partner networks distributed across ABC-XYZ segments?                                     | Classify partner value and stability                                                      |
+| Why shouldn't segmentation be applied to ABC-XYZ analysis?                                        | Prevent misinterpretation of inventory-focused analytics                                  |
+
+---
+
+## SQL Pipeline
+
+### Weekly Revenue by Chain
+Calculate weekly revenue for each partner chain.
 
 ```sql
 WITH daily_revenue AS (
-
-    /* Рассчитываем недельную выручку сетей */
-
+    -- Calculate weekly revenue per restaurant chain
     SELECT p.chain,
-           date_trunc('week', log_date) as log_week,
+           date_trunc('week', log_date) AS log_week,
            SUM(revenue) AS revenue
     FROM module3_analytics_events e
-    LEFT JOIN module3_partners p on p.rest_id = e.rest_id
+    LEFT JOIN module3_partners p ON p.rest_id = e.rest_id
     WHERE event = 'order'
-    GROUP BY p.chain,
-             date_trunc('week', log_date)
+    GROUP BY p.chain, date_trunc('week', log_date)
+)
+```
 
-),
-partners AS (
+### Partner Variation Metrics
+Compute revenue variation metrics.
 
-    /* Рассчитываем коэффициенты вариативности */
-
+```sql
+,partners AS (
+    -- Calculate revenue standard deviation and coefficient of variation
     SELECT chain,
            SUM(revenue) AS revenue,
            STDDEV(revenue) AS std,
            STDDEV(revenue) / AVG(revenue) AS var_coeff
     FROM daily_revenue
     GROUP BY chain
+)
+```
 
-),
-abc_xyz AS (
+### ABC-XYZ Grouping
+Assign each partner to ABC and XYZ groups.
 
-    /* Рассчитываем доли от общей выручки */
-
+```sql
+,abc_xyz AS (
+    -- Calculate cumulative revenue share and assign ABC/XYZ segments
     SELECT chain,
            revenue,
            SUM(revenue) OVER (ORDER BY revenue DESC) AS cumulative_revenue,
-           SUM(revenue) OVER () tot_rev,
+           SUM(revenue) OVER () AS tot_rev,
            SUM(revenue) OVER (ORDER BY revenue DESC) / SUM(revenue) OVER () AS perc,
            std,
            var_coeff
     FROM partners
     ORDER BY revenue DESC
-
 )
-
-/* Распределяем партнёрские рестораны по группам */
 
 SELECT chain,
        CASE 
@@ -92,40 +100,31 @@ SELECT chain,
            WHEN var_coeff <= 0.1 THEN 'X'
            WHEN var_coeff <= 0.3 THEN 'Y'
            ELSE 'Z'
-       END  AS xyz
-FROM abc_xyz
+       END AS xyz
+FROM abc_xyz;
 ```
 
-## DashBoard
+---
 
-https://public.tableau.com/app/profile/svetlana.bogomaz/viz/Userjourney_17244414208700/RFM-ABC-XYZ-?publish=yes
+## Dashboard
+
+[View Tableau Dashboard](https://public.tableau.com/app/profile/svetlana.bogomaz/viz/Userjourney_17244414208700/RFM-ABC-XYZ-?publish=yes)
+
+---
 
 ## Conclusions
 
-### **Improving the User Journey to Purchase**
+### Improving the User Journey
+- Most users purchase during their first session.
+- The main bottleneck is phone number verification — the registration interface should be improved, especially for mobile.
+- Adding items to cart also causes significant drop-off — UX testing is recommended to find friction points.
 
-- Since "Vse.iz.Kafe" customers often place an order during their first session, but the biggest bottleneck in conversion across all segments is **phone number verification**, the **registration confirmation interface** needs improvement, especially for mobile users.
-- Additionally, **adding items to the cart** also sees a significant drop in user transitions. Conducting a **UX test** to identify potential difficulties at this step could help optimize the process.
+### Customer Loyalty
+- The biggest issue is low repeat purchases, particularly in segments 111, 112, 211, and 311.
+- Loyalty programs and cumulative discounts may improve frequency and average check.
+- Targeted campaigns in cities like Novosibirsk (e.g., segment 312) may unlock additional value.
 
-### **Increasing Customer Loyalty**
-
-- The main challenge for the service is **repeat purchases** (especially in segments 111, 112, 211, and 311). Implementing **loyalty programs and cumulative discounts** could help increase order frequency and **raise the average check**, which is currently low across many segments.
-- Consider targeted **marketing campaigns** in specific cities, such as **Novosibirsk**, where segment **312** is the largest but has only **5 unique customers**. Expanding the customer base in this segment could drive growth.
-
-### **Revising the Partner Restaurant List**
-
-- The key growth opportunity lies in **stabilizing demand** for restaurants such as **Gastronomic Storm, Gourmet Delight, Breakfasts for Every Taste, and Chocolate Paradise**. Introducing **permanent promotions or loyalty systems** in these restaurants could help ensure steady revenue.
-- Consider **discontinuing partnerships** with underperforming restaurants in **Group C**, including:
-    - **Sandwich Universe**
-    - **Sandwich Traveler**
-    - **Venetian Pub**
-    - **Breakfasts Every Day**
-    - **Confectionery Story**
-    - **Mamma Mia**
-    - **Incredible Sandwiches**
-    - **Pasta & Friends**
-    - **Sweet Journey**
-    - **Sandwich Parade**
-    - **Florentine Restaurant**
-
-Focusing on **high-performing partners** and optimizing the **user experience** will enhance both conversion rates and customer retention.
+### Partner Network Strategy
+- Stabilizing demand for restaurants like Gastronomic Storm and Gourmet Delight could boost revenue.
+- Consider terminating underperformers in Group C, such as Sandwich Universe, Mamma Mia, etc.
+- Prioritize high-performing chains and enhance the partner mix for sustainability.
