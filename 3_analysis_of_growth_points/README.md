@@ -110,6 +110,8 @@ FROM abc_xyz;
 
 [View Tableau Dashboard](https://public.tableau.com/app/profile/svetlana.bogomaz/viz/Userjourney_17244414208700/RFM-ABC-XYZ-?publish=yes)
 
+![Dashboard.png](Dashboard.png)
+
 ---
 
 ## Conclusions
