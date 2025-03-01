@@ -1,175 +1,171 @@
-# 4. A/B test of marketplace "Everything.Equipment”
+# 4. A/B Test of Marketplace "Everything.Equipment"
 
-### **RESEARCH OBJECTIVE AND CONTEXT**
+## Table of Contents
+1. [Context and Objective](#context-and-objective)
+2. [Hypothesis and Metrics](#hypothesis-and-metrics)
+3. [Questions](#questions)
+4. [SQL Pipeline](#sql-pipeline)
+   - [User Profile + Purchases (Historic)](#user-profile--purchases-historic)
+   - [Test Group Overlap Check](#test-group-overlap-check)
+   - [User Profile + Purchases (Test)](#user-profile--purchases-test)
+5. [Dashboard](#dashboard)
+6. [Conclusions and Recommendations](#conclusions-and-recommendations)
 
-### **Context:**
+---
 
-The marketplace **"Vse.tekhnika"** has decided to create a separate category for **gaming laptops**, which were previously grouped with PCs and regular laptops. Before rolling out this change across the entire platform, the team wants to validate the idea through an **A/B test**.
+## Context and Objective
 
-### **Objective:**
+**Context:** The marketplace **"Vse.tekhnika"** introduced a new category for **gaming laptops**, previously grouped with other computers. Before full deployment, an **A/B test** was run to validate the effect of this change.
 
-Conduct an **A/B test** on the **"Vse.tekhnika"** marketplace audience.
+**Objective:** Assess whether creating a dedicated category improves visibility and sales of gaming laptops.
 
-### **Hypothesis:**
+---
 
-Demand for **gaming laptops** could be higher, but users struggle to find them among other laptops.
+## Hypothesis and Metrics
 
-### **Test Metrics:**
+**Hypothesis:**
+- Demand for gaming laptops is underestimated due to difficulty locating them in the catalog.
 
-- **Conversion rate** will increase by **100%**
-- **Average order value** in the category will **remain stable**
+**Test Metrics:**
+- **Conversion rate** will double.
+- **Average order value (AOV)** will remain unchanged.
 
-## SQL
+---
 
-```sql
+## Questions
 
-            WITH
+| Question                                                        | Purpose                                       |
+|-----------------------------------------------------------------|-----------------------------------------------|
+| Are control and test groups balanced in size?                  | Ensure test validity                          |
+| Did the test group have a significantly higher conversion rate?| Measure hypothesis success                    |
+| Was there a change in average order value (AOV)?               | Assess quality of revenue                     |
+| Were statistical tests used to validate results?               | Evaluate reliability of findings              |
+| What business actions are recommended?                         | Guide future implementation                   |
 
-            -- Сформируем профиль пользователя
+---
 
-            profiles AS (
+## SQL Pipeline
 
-                SELECT DISTINCT user_id,
-                       MIN(install_date) OVER (PARTITION BY user_id) AS install_date,
-                       MAX(registration_flag) OVER (PARTITION BY user_id) AS registration_flag,
-                       FIRST_VALUE(region) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_region,
-                       FIRST_VALUE(device) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_device
-                FROM sessions_project_history
-                WHERE install_date BETWEEN '2020-08-11' AND '2020-09-10'
-
-            ),
-
-            -- Получим данные о покупках
-
-            orders AS (
-
-                  SELECT user_id,
-                         COUNT(purchases_number) AS transactions,
-                /* Добавьте выражение для расчёта числа транзакций здесь */
-                         SUM(price) AS revenue
-                /* Добавьте выражение для определения выручки здесь */
-                  FROM purchases_project_history
-                  WHERE category = 'computer_equipments' /* Задайте условие для выбора категории товаров здесь */
-                  GROUP BY user_id
-
-            )
-
-            -- Объединим всё в единый набор данных
-
-            SELECT p.user_id,
-                   p.install_date,
-                   o.transactions,
-                   o.revenue
-            FROM profiles p
-            LEFT JOIN orders o ON o.user_id = p.user_id
-            /* задайте условие для JOIN здесь */
-```
+### User Profile + Purchases (Historic)
+Get user attributes and purchase summary from historical dataset.
 
 ```sql
-            WITH
-
-            -- Сформируем профиль пользователя
-
-            profiles AS (
-
-                SELECT DISTINCT user_id,
-                       MIN(install_date) OVER (PARTITION BY user_id) AS install_date,
-                       MAX(registration_flag) OVER (PARTITION BY user_id) AS registration_flag,
-                       FIRST_VALUE(region) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_region,
-                       FIRST_VALUE(device) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_device,
-                       FIRST_VALUE(test_name) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS test_name,
-                       test_group
-                FROM sessions_project_test_part
-                WHERE install_date BETWEEN '2020-10-14' AND '2020-10-14'
-
-            )
-            SELECT user_id,
-                   COUNT(DISTINCT test_group) AS in_groups
-                    /* Задайте выражение для расчёта числа уникальных групп здесь */
-            FROM profiles
-            WHERE test_name = 'gaming_laptops_test'
-            GROUP BY user_id
-            HAVING COUNT(DISTINCT test_group) > 1
+WITH profiles AS (
+    -- Create user profile from historic sessions
+    SELECT DISTINCT user_id,
+           MIN(install_date) OVER (PARTITION BY user_id) AS install_date,
+           MAX(registration_flag) OVER (PARTITION BY user_id) AS registration_flag,
+           FIRST_VALUE(region) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_region,
+           FIRST_VALUE(device) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_device
+    FROM sessions_project_history
+    WHERE install_date BETWEEN '2020-08-11' AND '2020-09-10'
+),
+orders AS (
+    -- Get transactions and revenue
+    SELECT user_id,
+           COUNT(purchases_number) AS transactions,
+           SUM(price) AS revenue
+    FROM purchases_project_history
+    WHERE category = 'computer_equipments'
+    GROUP BY user_id
+)
+-- Combine profiles and orders
+SELECT p.user_id, p.install_date, o.transactions, o.revenue
+FROM profiles p
+LEFT JOIN orders o ON o.user_id = p.user_id;
 ```
+
+### Test Group Overlap Check
+Verify that users appear in only one test group.
 
 ```sql
-
-            WITH
-
-            -- Сформируем профиль пользователя
-
-            profiles AS (
-
-                SELECT DISTINCT user_id,
-                       MIN(install_date) OVER (PARTITION BY user_id) AS install_date,
-                       MAX(registration_flag) OVER (PARTITION BY user_id) AS registration_flag,
-                       FIRST_VALUE(region) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_region,
-                       FIRST_VALUE(device) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_device,
-                       FIRST_VALUE(test_name) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS test_name,
-                       FIRST_VALUE(test_group) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS test_group
-                FROM sessions_project_test
-                WHERE install_date BETWEEN '2020-10-14' AND '2020-10-20'
-
-            ),
-
-            -- Получим данные о покупках
-
-            orders AS (
-
-                SELECT user_id,
-                         COUNT(purchases_number) AS transactions,
-                         SUM(price) AS revenue
-                  FROM purchases_project_test
-                  WHERE category = 'computer_equipments' 
-                  GROUP BY user_id
-                  /* Задайте подзапрос для определения числа покупок (trnsactions) и выручки (revenue) здесь */
-
-            )
-
-            -- Объединим всё в единый набор данных
-
-            SELECT p.user_id,
-                   p.install_date,
-                   p.test_group,
-                   o.transactions,
-                   o.revenue
-            FROM profiles p
-            LEFT JOIN orders o ON o.user_id = p.user_id
-            WHERE test_name = 'gaming_laptops_test'
-            /* Добавьте условие на название теста здесь */
+WITH profiles AS (
+    -- Create user profile for partial test group
+    SELECT DISTINCT user_id,
+           MIN(install_date) OVER (PARTITION BY user_id) AS install_date,
+           MAX(registration_flag) OVER (PARTITION BY user_id) AS registration_flag,
+           FIRST_VALUE(region) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_region,
+           FIRST_VALUE(device) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_device,
+           FIRST_VALUE(test_name) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS test_name,
+           test_group
+    FROM sessions_project_test_part
+    WHERE install_date BETWEEN '2020-10-14' AND '2020-10-14'
+)
+-- Count users assigned to multiple groups
+SELECT user_id, COUNT(DISTINCT test_group) AS in_groups
+FROM profiles
+WHERE test_name = 'gaming_laptops_test'
+GROUP BY user_id
+HAVING COUNT(DISTINCT test_group) > 1;
 ```
 
-## DashBoard
+### User Profile + Purchases (Test)
+Assemble test user data and revenue.
 
-https://public.tableau.com/app/profile/svetlana.bogomaz/viz/ABtest_17260813740980/Rev
+```sql
+WITH profiles AS (
+    -- Create user profile for test dataset
+    SELECT DISTINCT user_id,
+           MIN(install_date) OVER (PARTITION BY user_id) AS install_date,
+           MAX(registration_flag) OVER (PARTITION BY user_id) AS registration_flag,
+           FIRST_VALUE(region) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_region,
+           FIRST_VALUE(device) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS first_device,
+           FIRST_VALUE(test_name) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS test_name,
+           FIRST_VALUE(test_group) OVER (PARTITION BY user_id ORDER BY session_start_ts) AS test_group
+    FROM sessions_project_test
+    WHERE install_date BETWEEN '2020-10-14' AND '2020-10-20'
+),
+orders AS (
+    -- Get transactions and revenue
+    SELECT user_id,
+           COUNT(purchases_number) AS transactions,
+           SUM(price) AS revenue
+    FROM purchases_project_test
+    WHERE category = 'computer_equipments'
+    GROUP BY user_id
+)
+-- Combine test profiles and purchases
+SELECT p.user_id, p.install_date, p.test_group, o.transactions, o.revenue
+FROM profiles p
+LEFT JOIN orders o ON o.user_id = p.user_id
+WHERE test_name = 'gaming_laptops_test';
+```
 
-## Conclusions and recommendations
+---
 
- 
+## Dashboard
 
-### **A/B Test Dashboard Summary**
+[View Tableau Dashboard](https://public.tableau.com/app/profile/svetlana.bogomaz/viz/ABtest_17260813740980/Rev)
 
-- The **control (15,256 users)** and **test (15,078 users)** groups were evenly distributed, with a total sample size of **30,334 users**, making the test valid.
-- **Conversion rate** in the test group (**1.11%**) was **0.59% higher** than in the control group (**0.52%**).
-- **Average order value (AOV)** was **580 RUB higher** in the control group due to outliers in the test group, which had both very low and very high purchase amounts.
+![History data.png](History%20data.png)
 
-### **Evaluation of Test Results**
+![A_B.png](A_B.png)
 
-- **Z-test for conversion rate:** p-value = **0.00000** → Statistically significant difference; conversion improved in the test group.
-- **T-test for average order value:** p-value = **0.26938** → No significant difference in revenue between groups; we fail to reject the null hypothesis.
-- **Mann-Whitney test for average order value:** p-value = **0.01016** → Significant difference in distributions between the two groups.
+![Results of test.png](Results%20of%20test.png)
 
-### **Business Conclusions & Recommendations**
+---
 
-- The test **was not entirely successful**, as the hypothesis about increasing AOV **was not confirmed**, even though conversion **significantly improved**.
-- The increase in conversion suggests that users found it easier to locate **gaming laptops**, leading to **more purchases** in the test group.
-- The lower AOV in the test group may be due to:
-    - The presence of **lower-priced products** in the category.
-    - A younger audience (gamers) with **lower purchasing power**.
-    - Fewer **upsell opportunities** for accessories and high-end models.
+## Conclusions and Recommendations
 
-### **Recommendations:**
+### A/B Test Summary
+- Test and control groups were evenly distributed: **15,256 control**, **15,078 test**.
+- **Conversion rate** improved: **1.11%** (test) vs **0.52%** (control).
+- **AOV** was **580 RUB higher** in the control group, due to extreme values in the test group.
 
-1. **Reevaluate the product assortment** in the gaming laptop category to ensure a balanced price range.
-2. **Introduce a loyalty program** to encourage higher spending on future purchases.
-3. **Explore targeted promotions** or bundling strategies to increase AOV (e.g., discounts on gaming accessories with laptop purchases).
+### Statistical Results
+- **Z-test for conversion rate** → p-value = 0.00000 → statistically significant improvement.
+- **T-test for AOV** → p-value = 0.26938 → no significant difference.
+- **Mann-Whitney test** → p-value = 0.01016 → significant difference in distribution.
+
+### Business Interpretation
+- Hypothesis partially validated: conversion improved, but AOV did not.
+- Test group benefited from easier product discovery.
+- Lower AOV possibly due to:
+  - Cheaper items in the category.
+  - Younger, lower-income audience.
+  - Fewer high-value accessory purchases.
+
+### Recommendations
+1. Reevaluate gaming laptop category assortment to balance pricing.
+2. Launch loyalty programs to increase future spending.
+3. Run targeted bundles or promotions (e.g., accessories with laptops).
